@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimeAwards - Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/navbar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container-aplicacao">
+    <aside class="sidebar"></aside>
+    <main class="conteudo-principal">
+      <div class="envelope-conteudo">
+        <!-- Cabeçalho -->
+        <header class="cabecalho-pagina">
+          <div class="conteudo-cabecalho d-flex justify-content-between align-items-center">
+            <div class="header-left">
+              <h1 class="titulo-pagina">Dashboard</h1>
+              <h4 class="subtitulo-pagina">
+                <i class="fas fa-user me-2"></i>
+                <span id="texto-subtitulo"></span>
+              </h4>
+            </div>
+          </div>
+        </header>
+
+        <form id="formulario" class="formulario-monitoramento">
+          <!-- Indicador de Carregamento -->
+          <div id="loading-indicator" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Carregando...
+          </div>
+
+          <!-- KPIs -->
+          <article class="caixa">
+            <h4><i class="fa-solid fa-chart-pie me-2"></i>Indicadores Principais</h4>
+            <div class="opcoes-notificacao">
+              <div class="item-notificacao sono-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-clock me-2"></i>Tempo de Uso (Hoje)</h3>
+                  <p id="kpi-tempo-total" class="descricao-notificacao"></p>
+                  <div class="progress-bar">
+                    <div id="progresso-tempo-total" class="progress-fill sono-theme"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="item-notificacao estudo-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-trophy me-2"></i>Metas Atingidas</h3>
+                  <p id="kpi-metas-atingidas" class="descricao-notificacao"></p>
+                  <div class="progress-bar">
+                    <div id="progresso-metas-atingidas" class="progress-fill estudo-theme"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="item-notificacao alerta-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-exclamation-triangle me-2"></i>Alertas</h3>
+                  <p id="kpi-alertas" class="descricao-notificacao"></p>
+                  <div class="progress-bar">
+                    <div id="progresso-alertas" class="progress-fill alerta-theme"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Gráficos -->
+          <article class="caixa">
+            <h4><i class="fa-solid fa-chart-line me-2"></i>Gráficos de Desempenho</h4>
+            <div class="dashboard-grid">
+              <!-- Rosca: Divisão de tempo -->
+              <div class="chart-card">
+                <h3 class="titulo-grafico"><i class="fas fa-chart-pie me-2"></i>Divisão de Tempo</h3>
+                <div class="chart-wrapper">
+                  <canvas id="canvas-rosca"></canvas>
+                </div>
+              </div>
+
+              <!-- Indicador: Trabalho -->
+              <div class="item-notificacao trabalho-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-briefcase"></i>Horas de Trabalho</h3>
+                  <div class="progress-bar">
+                    <div id="progresso-trabalho" class="progress-fill trabalho-theme"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Indicador: Estudo -->
+              <div class="item-notificacao estudo-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-book-open"></i>Horas de Estudo</h3>
+                  <div class="progress-bar">
+                    <div id="progresso-estudos" class="progress-fill estudo-theme"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Indicador: Atividade Física -->
+              <div class="item-notificacao atividade-fisica-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-dumbbell"></i>Horas de Atividade Física</h3>
+                  <div class="progress-bar">
+                    <div id="progresso-atividade-fisica" class="progress-fill atividade-fisica-theme"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Indicador: Tela -->
+              <div class="item-notificacao tela-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-desktop"></i>Horas de Tela</h3>
+                  <div class="progress-bar">
+                    <div id="progresso-tela" class="progress-fill tela-theme"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Indicador: Sono -->
+              <div class="item-notificacao sono-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-bed"></i>Horas de Sono</h3>
+                  <div class="progress-bar">
+                    <div id="progresso-sono" class="progress-fill sono-theme"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Indicador: Lazer -->
+              <div class="item-notificacao lazer-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-gamepad"></i>Horas de Lazer</h3>
+                  <div class="progress-bar">
+                    <div id="progresso-lazer" class="progress-fill lazer-theme"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Linha: Últimas 4 semanas -->
+              <div class="chart-card">
+                <h3 class="titulo-grafico"><i class="fas fa-chart-line me-2"></i>Tempo Gasto</h3>
+                <div class="chart-wrapper" style="height: 280px">
+                  <canvas id="canvas-linha"></canvas>
+                </div>
+              </div>
+            </div>
+          </article>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/navbar.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+</body>
+</html>

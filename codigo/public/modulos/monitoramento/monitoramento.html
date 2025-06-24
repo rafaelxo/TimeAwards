@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeAwards - Monitoramento</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="monitoramento.css">
+    <link rel="stylesheet" href="../../assets/css/navbar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="container-aplicacao">
+        <aside class="sidebar"></aside>
+        <main class="conteudo-principal">
+            <div class="envelope-conteudo">
+                <header class="cabecalho-pagina">
+                    <div class="conteudo-cabecalho">
+                        <div class="header-left">
+                            <h1 class="titulo-pagina">Monitoramento</h1>
+                            <h4 class="subtitulo-pagina">
+                                <i class="fas fa-user"></i>
+                                <span id="texto-subtitulo"></span>
+                            </h4>
+                        </div>
+                    </div>
+                </header>
+
+                <form id="formulario-monitoramento" class="formulario-monitoramento" novalidate>
+                    <article class="caixa resumo-horas">
+                        <h4><i class="fa-solid fa-clock me-2"></i>Resumo de Horas</h4>
+                        <div class="grade-formulario">
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Tempo de Uso (Hoje)</label>
+                                <input type="text" id="tempo-uso-hoje" class="input-formulario" readonly>
+                            </div>
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Média de Horas Diárias</label>
+                                <input type="text" id="media-horas-diarias" class="input-formulario" readonly>
+                            </div>
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Total de Horas</label>
+                                <input type="text" id="horas-totais" class="input-formulario" readonly>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="caixa medias-categoria">
+                        <h4><i class="fa-solid fa-chart-bar me-2"></i>Médias Diária por Categoria</h4>
+                        <div class="grade-formulario">
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Trabalho</label>
+                                <input type="text" id="media-trabalho" class="input-formulario" readonly>
+                            </div>
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Estudos</label>
+                                <input type="text" id="media-estudos" class="input-formulario" readonly>
+                            </div>
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Atividade Física</label>
+                                <input type="text" id="media-atividade-fisica" class="input-formulario" readonly>
+                            </div>
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Tela</label>
+                                <input type="text" id="media-tela" class="input-formulario" readonly>
+                            </div>
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Lazer</label>
+                                <input type="text" id="media-lazer" class="input-formulario" readonly>
+                            </div>
+                            <div class="campo-formulario">
+                                <label class="rotulo-formulario">Sono</label>
+                                <input type="text" id="media-sono" class="input-formulario" readonly>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-bullseye me-2"></i>Metas e Limites Diários</h4>
+                        <div class="opcoes-notificacao">
+                            <div class="item-notificacao trabalho-theme">
+                                <div class="conteudo-notificacao">
+                                    <h3 class="titulo-notificacao">
+                                        <i class="fas fa-briefcase"></i>
+                                        Horas de Trabalho
+                                    </h3>
+                                    <p id="meta-trabalho" class="descricao-notificacao"></p>
+                                    <div class="progress-bar">
+                                        <div id="progresso-trabalho" class="progress-fill trabalho-theme"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="item-notificacao estudo-theme">
+                                <div class="conteudo-notificacao">
+                                    <h3 class="titulo-notificacao">
+                                        <i class="fas fa-book-open"></i>
+                                        Horas de Estudo
+                                    </h3>
+                                    <p id="meta-estudo" class="descricao-notificacao"></p>
+                                    <div class="progress-bar">
+                                        <div id="progresso-estudo" class="progress-fill estudo-theme"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="item-notificacao atividade-fisica-theme">
+                                <div class="conteudo-notificacao">
+                                    <h3 class="titulo-notificacao">
+                                        <i class="fas fa-dumbbell"></i>
+                                        Horas de Atividade Física
+                                    </h3>
+                                    <p id="meta-atividade-fisica" class="descricao-notificacao"></p>
+                                    <div class="progress-bar">
+                                        <div id="progresso-atividade-fisica"
+                                            class="progress-fill atividade-fisica-theme"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="item-notificacao tela-theme">
+                                <div class="conteudo-notificacao">
+                                    <h3 class="titulo-notificacao">
+                                        <i class="fas fa-desktop"></i>
+                                        Horas de Tela
+                                    </h3>
+                                    <p id="meta-tela" class="descricao-notificacao"></p>
+                                    <div class="progress-bar">
+                                        <div id="progresso-tela" class="progress-fill tela-theme"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="item-notificacao lazer-theme">
+                                <div class="conteudo-notificacao">
+                                    <h3 class="titulo-notificacao">
+                                        <i class="fas fa-gamepad"></i>
+                                        Horas de Lazer
+                                    </h3>
+                                    <p id="meta-lazer" class="descricao-notificacao"></p>
+                                    <div class="progress-bar">
+                                        <div id="progresso-lazer" class="progress-fill lazer-theme"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="item-notificacao sono-theme">
+                                <div class="conteudo-notificacao">
+                                    <h3 class="titulo-notificacao">
+                                        <i class="fas fa-bed"></i>
+                                        Horas de Sono
+                                    </h3>
+                                    <p id="meta-sono" class="descricao-notificacao"></p>
+                                    <div class="progress-bar">
+                                        <div id="progresso-sono" class="progress-fill sono-theme"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-list me-2"></i>Atividades Registradas</h4>
+                        <table id="tabela-atividades">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-coluna="nomeAtividade">Nome</th>
+                                    <th class="sortable" data-coluna="classe">Classe</th>
+                                    <th class="sortable" data-coluna="horasGastas">Horas Gastas</th>
+                                    <th class="sortable" data-coluna="prioridade">Prioridade</th>
+                                    <th class="sortable" data-coluna="dataHora">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </article>
+
+                    <div class="acoes-formulario">
+                        <div class="botoes-acoes-esquerda">
+                            <button type="button" id="cancelar" class="botao botao-cancelar" aria-label="Cancelar">
+                                <i class="fa-solid fa-xmark"></i>Cancelar
+                            </button>
+                            <button type="reset" id="limpar" class="botao botao-limpar" aria-label="Limpar">
+                                <i class="fa-solid fa-eraser"></i>Limpar
+                            </button>
+                        </div>
+                        <button type="submit" id="atualizar" class="botao botao-enviar" aria-label="Atualizar">
+                            <i class="fa-solid fa-sync-alt"></i>Atualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../assets/js/navbar.js"></script>
+    <script src="monitoramento.js"></script>
+</body>
+
+</html>

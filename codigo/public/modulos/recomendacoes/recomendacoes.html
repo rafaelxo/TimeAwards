@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimeAwards - Recomendações</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="recomendacoes.css" />
+  <link rel="stylesheet" href="../../assets/css/navbar.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <div class="container-aplicacao">
+    <aside class="sidebar"></aside>
+
+    <main class="conteudo-principal">
+      <div class="envelope-conteudo">
+        <!-- Cabeçalho padrão -->
+        <header class="cabecalho-pagina">
+          <div class="conteudo-cabecalho d-flex justify-content-between align-items-center">
+            <div class="header-left">
+              <h1 class="titulo-pagina">Recomendações</h1>
+              <h4 class="subtitulo-pagina">
+                <i class="fas fa-user me-2"></i>
+                <span id="texto-subtitulo"></span>
+              </h4>
+            </div>
+          </div>
+        </header>
+
+        <form id="formulario" class="formulario-perfil">
+          <!-- Indicadores -->
+          <article class="caixa">
+            <h4><i class="fa-solid fa-chart-pie me-2"></i>Indicadores Pessoais</h4>
+            <div class="opcoes-notificacao">
+              <div class="item-notificacao blue-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-clock me-2"></i>Tempo de Uso (Hoje)</h3>
+                  <p id="kpi-tempo" class="descricao-notificacao">-</p>
+                  <div class="progress-bar">
+                    <div id="progresso-tempo" class="progress-fill blue-theme"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="item-notificacao green-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-trophy me-2"></i>Metas Atingidas</h3>
+                  <p id="kpi-metas" class="descricao-notificacao">-</p>
+                  <div class="progress-bar">
+                    <div id="progresso-metas" class="progress-fill green-theme"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="item-notificacao red-theme">
+                <div class="conteudo-notificacao">
+                  <h3 class="titulo-notificacao"><i class="fas fa-exclamation-triangle me-2"></i>Alertas</h3>
+                  <p id="kpi-alerta" class="descricao-notificacao">-</p>
+                  <div class="progress-bar">
+                    <div id="progresso-alerta" class="progress-fill red-theme"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Recomendações -->
+          <article class="caixa">
+            <h4><i class="fa-solid fa-lightbulb me-2"></i>Recomendações Inteligentes</h4>
+            <div class="grade-formulario"></div>
+          </article>
+
+          <!-- Botões -->
+          <div class="acoes-formulario">
+            <div class="botoes-acoes-esquerda">
+              <button type="button" class="botao botao-cancelar">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+              <button type="button" class="botao botao-limpar">
+                <i class="fas fa-eraser"></i> Limpar
+              </button>
+            </div>
+            <button type="button" class="botao botao-enviar">
+              <i class="fas fa-sync-alt"></i> Gerar novas recomendações
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="../../assets/js/navbar.js"></script>
+  <script src="recomendacoes.js"></script>
+</body>
+</html>

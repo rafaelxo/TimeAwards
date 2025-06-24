@@ -1,0 +1,32 @@
+cff-version: 1.0.1
+message: Please cite this software using these metadata.
+title: TimeAwards 
+authors:
+  - family-names: Xavier
+    given-names: Rafael
+  - family-names: Meirelles
+    given-names: Matheus
+  - family-names: Sendas
+    given-names: Paulo
+  - family-names: Silva
+    given-names: Lucas
+  - family-names: Teixeira
+    given-names: Lucas
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Rivero
+    given-names: Ilo
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Curto
+    given-names: Hayala
+keywords:
+  - TimeAwards
+  - Depedência 
+  - Tecnologia
+  - Vício 
+  - Software
+repository-code: https://github.com/ICEI-PUC-Minas-PPLCC-TI/atividade-01-dependencia-da-tecnologia
+license: CC-BY-4.0
+version: 1.0.0
+date-released: 2025-06-22

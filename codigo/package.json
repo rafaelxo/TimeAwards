@@ -1,0 +1,17 @@
+{
+  "name": "lab-jsonserver",
+  "version": "1.0.0",
+  "description": "Laboratório de aplicação Web com backend baseado no JSON Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Rommel Vieira Carneiro",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "json-server": "^0.17.4",
+    "jsonserver": "^0.1.6"
+  }
+}

@@ -1,0 +1,92 @@
+/* Estilos da barra lateral */
+.sidebar {
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        width: 16rem;
+    }
+}
+
+/* Cabeçalho da barra lateral */
+.sidebar-header {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-header a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo-icone {
+    height: 2rem;
+    width: 2rem;
+    margin-right: 0.5rem;
+}
+
+.logo-texto {
+    font-size: 1.25rem;
+    font-weight: 600;
+    background: linear-gradient(to right, rgb(48, 48, 255), rgb(0, 0, 65));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+/* Navegação da barra lateral */
+.sidebar-nav {
+    padding: 1rem 0;
+}
+
+.sidebar-nav a {
+    text-decoration: none;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+    background-color: #dbeafe;
+}
+
+.nav-item.active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.nav-icone {
+    margin-right: 0.75rem;
+    width: 1rem;
+}
+
+.container-foto {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 200px;
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    margin: 1rem auto;
+}
+
+#foto-perfil {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}

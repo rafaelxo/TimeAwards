@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeAwards - Feedback</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="feedback.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/css/navbar.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div id="notification-container"></div>
+    <div class="container-aplicacao">
+        <aside class="sidebar"></aside>
+
+        <main class="conteudo-principal">
+            <div class="envelope-conteudo">
+                <header class="cabecalho-pagina">
+                    <div class="conteudo-cabecalho">
+                        <div class="header-left">
+                            <h1 class="titulo-pagina">Formulário de Feedback</h1>
+                            <h4 class="subtitulo-pagina">
+                                <i class="fas fa-user"></i>
+                                <span id="texto-subtitulo"></span>
+                            </h4>
+                        </div>
+                    </div>
+                </header>
+
+                <form id="formulario" class="formulario-feedback" novalidate>
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-calendar-days me-2"></i>Data de Início</h4>
+                        <input type="date" id="data" class="input-formulario" required>
+                        <div class="erro" id="erro-data"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-clock me-2"></i>Atrasos Iniciais</h4>
+                        <input type="text" id="atrasos" class="input-formulario"
+                            placeholder="Ex.: Atrasos frequentes em reuniões" required>
+                        <div class="erro" id="erro-atrasos"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-list-check me-2"></i>Atividades Realizadas</h4>
+                        <input type="text" id="atividades" class="input-formulario"
+                            placeholder="Ex.: Implementar agenda digital, estabelecer horários fixos" required>
+                        <div class="erro" id="erro-atividades"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-triangle-exclamation me-2"></i>Dificuldades Encontradas</h4>
+                        <input type="text" id="dificuldades" class="input-formulario"
+                            placeholder="Ex.: Adaptação à nova rotina, manter consistência" required>
+                        <div class="erro" id="erro-dificuldades"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-thumbs-up me-2"></i>Benefícios Obtidos</h4>
+                        <input type="text" id="beneficios" class="input-formulario"
+                            placeholder="Ex.: Maior produtividade, melhor gestão do tempo" required>
+                        <div class="erro" id="erro-beneficios"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-hourglass-half me-2"></i>Tempo de Duração</h4>
+                        <input type="number" id="tempo" class="input-formulario" placeholder="Ex.: 90 (dias)" min="1"
+                            max="365" required>
+                        <div class="erro" id="erro-tempo"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-face-smile me-2"></i>Nível de Satisfação</h4>
+                        <input type="number" id="satisfacao" class="input-formulario" placeholder="Ex.: 5" min="1"
+                            max="10" required>
+                        <div class="erro" id="erro-satisfacao"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-note-sticky me-2"></i>Observações</h4>
+                        <input type="text" id="observacoes" class="input-formulario"
+                            placeholder="Ex.: O processo ajudou muito na organização pessoal" required>
+                        <div class="erro" id="erro-observacoes"></div>
+                    </article>
+
+                    <article class="caixa">
+                        <h4><i class="fa-solid fa-chart-line me-2"></i>Próximas Metas</h4>
+                        <input type="text" id="metas" class="input-formulario"
+                            placeholder="Ex.: Reduzir tempo em redes sociais, focar mais em prioridades" required>
+                        <div class="erro" id="erro-metas"></div>
+                    </article>
+
+                    <div class="acoes-formulario">
+                        <div class="botoes-acoes-esquerda">
+                            <button type="button" id="cancelar" class="botao botao-cancelar"
+                                aria-label="Cancelar o preenchimento">
+                                <i class="fa-solid fa-xmark"></i>Cancelar
+                            </button>
+                            <button type="reset" id="limpar" class="botao botao-limpar"
+                                aria-label="Limpar o formulário">
+                                <i class="fa-solid fa-eraser"></i>Limpar
+                            </button>
+                        </div>
+                        <button type="submit" id="registrar" class="botao botao-enviar"
+                            aria-label="Registrar o feedback">
+                            <i class="fa-solid fa-paper-plane"></i>Registrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../assets/js/navbar.js"></script>
+    <script src="feedback.js"></script>
+</body>
+
+</html>

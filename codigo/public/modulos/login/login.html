@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimeAwards - Login de Usuário</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    :root {
+      --primary-color: #4895ef;
+      --primary-hover: #3a56d4;
+      --secondary-color: #6c757d;
+      --info-color: #4361ee;
+      --light-bg: #f8f9fa;
+      --text-color: #2b2d42;
+      --text-light: #8d99ae;
+      --gradient-bg: linear-gradient(135deg, #4895ef, #4361ee);
+      --title-gradient: linear-gradient(to right, rgb(48, 48, 255), rgb(0, 0, 65));
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --border-radius: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(100deg, #f8f9fa, #bee0ff);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      color: var(--text-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    #login {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      animation: slideIn 0.8s ease-out;
+      z-index: 1;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    #login-box {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      padding: 2.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    #login-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    #login-form h3 {
+      color: var(--primary-color);
+      font-weight: 600;
+      margin-bottom: 2rem;
+      position: relative;
+      padding-bottom: 0.75rem;
+      text-align: center;
+      font-size: 1.75rem;
+    }
+
+    #login-form h3::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 4px;
+      background: var(--gradient-bg);
+      border-radius: 2px;
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      position: absolute;
+      top: 0.85rem;
+      left: 3.5rem; /* Ajustado para evitar sobreposição com o ícone */
+      color: var(--text-light);
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+
+    .form-control:focus ~ .form-label,
+    .form-control:not(:placeholder-shown) ~ .form-label {
+      top: -0.5rem;
+      left: 1rem;
+      font-size: 0.75rem;
+      color: var(--primary-color);
+      background: white;
+      padding: 0 0.25rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: var(--light-bg);
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(72, 149, 239, 0.25);
+      background-color: white;
+    }
+
+    .btn {
+      padding: 0.75rem 1.75rem;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: var(--gradient-bg);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #3a7bd5, #3755cc);
+    }
+
+    .btn-primary.loading::after {
+      content: '';
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid white;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .btn-info {
+      background-color: var(--info-color);
+      color: white;
+    }
+
+    .btn-info:hover {
+      background-color: #3755cc;
+    }
+
+    .modal-content {
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      border: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      background-color: #f8f9fa;
+      animation: fadeInModal 0.5s ease-out;
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      background: var(--gradient-bg);
+      color: white;
+      border-bottom: none;
+      padding: 1.5rem;
+    }
+
+    .modal-title {
+      font-weight: 600;
+      font-size: 1.5rem;
+    }
+
+    .modal-body {
+      padding: 2rem;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #e9ecef;
+      padding: 1.25rem 2rem;
+    }
+
+    .d-flex.justify-content-center.gap-2 {
+      gap: 1rem !important;
+      margin-top: 2rem !important;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      color: white;
+      z-index: 1050;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .notification.error {
+      background-color: #dc3545;
+    }
+
+    .notification.success {
+      background-color: #28a745;
+    }
+
+    @media (max-width: 768px) {
+      #login-column { padding: 0 1rem; }
+      #login-box { padding: 1.75rem; }
+      .modal-dialog { margin: 0.5rem; }
+      #login-form h3 { font-size: 1.5rem; }
+    }
+
+    .password-toggle {
+      position: relative;
+    }
+
+    .password-toggle-icon {
+      position: absolute;
+      top: 50%;
+      right: 40px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-light);
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle-icon:hover {
+      color: var(--primary-color);
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+      display: block;
+    }
+
+    .validation-icon {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .validation-icon.valid {
+      color: #28a745;
+      opacity: 1;
+    }
+
+    .validation-icon.invalid {
+      color: #dc3545;
+      opacity: 1;
+    }
+
+    .sidebar-header {
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+      flex-direction: row;
+    }
+
+    .sidebar-header a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .logo-icone {
+      height: 4rem;
+      width: 4rem;
+      margin-right: 0.75rem;
+      animation: rotate 10s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .logo-texto {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: var(--title-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      animation: gradientShift 3s ease infinite;
+      background-size: 200% 100%;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @media (max-width: 768px) {
+      .logo-icone { height: 3rem; width: 3rem; }
+      .logo-texto { font-size: 2rem; }
+      .sidebar-header { margin-bottom: 1.5rem; }
+    }
+
+    @media (max-width: 576px) {
+      .logo-icone { height: 2.5rem; width: 2.5rem; }
+      .logo-texto { font-size: 1.75rem; }
+      .sidebar-header { margin-bottom: 1rem; }
+    }
+
+    .input-group-text {
+      background-color: var(--light-bg);
+      border: 1px solid #e0e0e0;
+      border-right: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-group-text i {
+      transition: transform 0.3s ease;
+    }
+
+    .form-control:focus ~ .input-group-text i {
+      transform: scale(1.2);
+    }
+
+    .form-control {
+      border-left: none;
+    }
+
+    .forgot-password {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .forgot-password a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    .toast {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1050;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="particles-js"></div>
+  <div id="notification-container"></div>
+  <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto">Notificação</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body"></div>
+  </div>
+  <div id="login">
+    <div class="sidebar-header">
+      <a href="../../index.html">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-icone">
+          <circle cx="12" cy="12" r="10" stroke="#4285F4" stroke-width="2" />
+          <path d="M12 6V12L16 16" stroke="#4285F4" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <h1 class="logo-texto">TimeAwards</h1>
+      </a>
+    </div>
+    <div class="container">
+      <div id="login-row" class="row justify-content-center align-items-center">
+        <div id="login-column" class="col-md-6">
+          <div id="login-box" class="p-4">
+            <form id="login-form" class="form" method="post">
+              <h3 class="text-center mb-4">Identificação de Usuário</h3>
+              <div class="form-group">
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <input type="text" name="username" id="username" class="form-control" placeholder=" " required>
+                  <label for="username" class="form-label">Login</label>
+                  <i class="bi validation-icon"></i>
+                </div>
+                <span id="login-error" class="error-message"></span>
+              </div>
+              <div class="form-group password-toggle">
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                  <input type="password" name="password" id="password" class="form-control" placeholder=" " required>
+                  <label for="password" class="form-label">Senha</label>
+                  <i class="bi bi-eye-slash password-toggle-icon" id="togglePassword"></i>
+                  <i class="bi validation-icon"></i>
+                </div>
+                <span id="password-error" class="error-message"></span>
+              </div>
+              <div class="forgot-password">
+                <a href="#!">Esqueci minha senha</a>
+              </div>
+              <div class="d-flex justify-content-center gap-2 mt-3">
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                  data-bs-target="#registerModal" data-bs-toggle="tooltip" title="Crie uma nova conta">Registrar</button>
+                <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" title="Acesse sua conta">Login</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="registerModalLabel">Novo Usuário</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="register-form" class="form">
+            <div class="form-group">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" name="txt_login" id="txt_login" class="form-control" placeholder=" " required
+                  data-bs-toggle="tooltip" title="Mínimo de 5 caracteres">
+                <label for="txt_login" class="form-label">Usuário</label>
+                <i class="bi validation-icon"></i>
+              </div>
+              <span id="txt_login-error" class="error-message"></span>
+            </div>
+            <div class="form-group">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" name="txt_nome" id="txt_nome" class="form-control" placeholder=" " required
+                  data-bs-toggle="tooltip" title="Digite seu nome completo">
+                <label for="txt_nome" class="form-label">Nome completo</label>
+                <i class="bi validation-icon"></i>
+              </div>
+              <span id="txt_nome-error" class="error-message"></span>
+            </div>
+            <div class="form-group">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" name="txt_email" id="txt_email" class="form-control" placeholder=" " required
+                  data-bs-toggle="tooltip" title="Use um email válido">
+                <label for="txt_email" class="form-label">Email</label>
+                <i class="bi validation-icon"></i>
+              </div>
+              <span id="txt_email-error" class="error-message"></span>
+            </div>
+            <div class="form-group password-toggle">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="txt_senha" id="txt_senha" class="form-control" placeholder=" " required
+                  data-bs-toggle="tooltip" title="Mínimo de 8 caracteres com letras, números e símbolos">
+                <label for="txt_senha" class="form-label">Senha</label>
+                <i class="bi bi-eye-slash password-toggle-icon" id="toggleSenha"></i>
+                <i class="bi validation-icon"></i>
+              </div>
+              <span id="txt_senha-error" class="error-message"></span>
+            </div>
+            <div class="form-group password-toggle">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="txt_senha2" id="txt_senha2" class="form-control" placeholder=" " required
+                  data-bs-toggle="tooltip" title="Confirme sua senha">
+                <label for="txt_senha2" class="form-label">Confirmação de Senha</label>
+                <i class="bi bi-eye-slash password-toggle-icon" id="toggleSenha2"></i>
+                <i class="bi validation-icon"></i>
+              </div>
+              <span id="txt_senha2-error" class="error-message"></span>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="btn_salvar" class="btn btn-success text-white">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="login.js"></script>
+  <script>
+    // Inicializar tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+    // Toggle de senha
+    function setupPasswordToggle(inputId, toggleId) {
+      const input = document.getElementById(inputId);
+      const toggle = document.getElementById(toggleId);
+      toggle.addEventListener('click', () => {
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        toggle.classList.toggle('bi-eye');
+        toggle.classList.toggle('bi-eye-slash');
+      });
+    }
+
+    setupPasswordToggle('password', 'togglePassword');
+    setupPasswordToggle('txt_senha', 'toggleSenha');
+    setupPasswordToggle('txt_senha2', 'toggleSenha2');
+
+    // Validação visual em tempo real
+    function validateField(input, icon) {
+      const value = input.value.trim();
+      let isValid = false;
+
+      if (input.id === 'username' || input.id === 'txt_login') {
+        isValid = value.length >= 5 && /^[a-zA-Z0-9_]+$/.test(value);
+      } else if (input.id === 'password' || input.id === 'txt_senha') {
+        isValid = value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value) && /[!@#$%^&*]/.test(value);
+      } else if (input.id === 'txt_senha2') {
+        isValid = value === document.getElementById('txt_senha').value;
+      } else if (input.id === 'txt_nome') {
+        isValid = value.length >= 3;
+      } else if (input.id === 'txt_email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|br)$/;
+        isValid = emailRegex.test(value);
+      }
+
+      icon.classList.toggle('bi-check-circle-fill', isValid);
+      icon.classList.toggle('bi-x-circle-fill', !isValid && value.length > 0);
+      icon.classList.toggle('valid', isValid);
+      icon.classList.toggle('invalid', !isValid && value.length > 0);
+    }
+
+    document.querySelectorAll('.form-control').forEach(input => {
+      const icon = input.parentElement.querySelector('.validation-icon');
+      if (icon) {
+        input.addEventListener('input', () => validateField(input, icon));
+      }
+    });
+
+    // Configuração do particles.js
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 100, density: { enable: true, value_area: 800 } },
+        color: { value: ['#4895ef', '#4361ee', '#3a56d4'] },
+        shape: { type: 'circle' },
+        opacity: { value: 0.8, random: true },
+        size: { value: 4, random: true },
+        line_linked: { enable: true, distance: 150, color: '#4895ef', opacity: 0.6, width: 1.5 },
+        move: { enable: true, speed: 3, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' }, resize: true },
+        modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+
+    function showToast(message, type) {
+      const toast = document.getElementById('toast');
+      const toastBody = toast.querySelector('.toast-body');
+      toastBody.textContent = message;
+      toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+      if (type === 'success') {
+        toast.classList.add('bg-success', 'text-white');
+      } else {
+        toast.classList.add('bg-danger', 'text-white');
+      }
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+    }
+
+    function processaFormLogin(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const loginError = document.getElementById('login-error');
+      const senhaError = document.getElementById('password-error');
+      const loginButton = document.querySelector('#login-form .btn-primary');
+
+      loginError.textContent = "";
+      senhaError.textContent = "";
+      loginButton.classList.add('loading');
+
+      const resultadoLogin = loginUser(username, password);
+      loginButton.classList.remove('loading');
+
+      if (resultadoLogin.success) {
+        showToast("Login realizado com sucesso!", 'success');
+        window.location.href = RETURN_URL;
+      } else {
+        if (resultadoLogin.message.includes("login")) {
+          loginError.textContent = resultadoLogin.message;
+        } else if (resultadoLogin.message.includes("senha")) {
+          senhaError.textContent = resultadoLogin.message;
+        } else {
+          showToast(resultadoLogin.message, 'error');
+        }
+      }
+    }
+
+    function salvaLogin(event) {
+      event.preventDefault();
+      const login = document.getElementById('txt_login').value;
+      const nome = document.getElementById('txt_nome').value;
+      const email = document.getElementById('txt_email').value;
+      const senha = document.getElementById('txt_senha').value;
+      const senha2 = document.getElementById('txt_senha2').value;
+      const salvarButton = document.getElementById('btn_salvar');
+
+      document.querySelectorAll('#register-form .error-message').forEach(span => span.textContent = "");
+      salvarButton.classList.add('loading');
+
+      addUser(nome, login, senha, email, senha2).then(resultado => {
+        salvarButton.classList.remove('loading');
+        if (resultado.success) {
+          showToast("Usuário registrado com sucesso! Proceda com o login.", 'success');
+          bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
+          document.getElementById('register-form').reset();
+        } else {
+          const errorSpan = document.getElementById(`txt_${resultado.field}-error`);
+          if (errorSpan) {
+            errorSpan.textContent = resultado.message;
+          } else {
+            showToast(resultado.message, 'error');
+          }
+        }
+      });
+    }
+
+    document.getElementById('login-form').addEventListener('submit', processaFormLogin);
+    document.getElementById('btn_salvar').addEventListener('click', salvaLogin);
+  </script>
+</body>
+
+</html>
