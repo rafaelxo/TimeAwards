@@ -158,6 +158,7 @@ public class RecomendadorService {
             throw new Exception("Variáveis de ambiente Azure OpenAI não configuradas. Usando fallback heurístico.");
         }
 
+        @SuppressWarnings("unused")
         String url = ENDPOINT;
         if (!url.endsWith("/"))
             url += "/";
