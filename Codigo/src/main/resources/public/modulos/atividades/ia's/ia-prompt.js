@@ -23,11 +23,11 @@ const containerNotif = () => {
 };
 
 const AZURE_CONFIG = {
-    azureEndpoint: "https://rectimeawards.openai.azure.com",
-    azureApiKey: "7VksncO3WYedWIN6ffBDgnTX7aZrf2RNVREjEhqMojs9HZrugmFUJQQJ99BJACHYHv6XJ3w3AAABACOGp8Ed",
-    azureDeployment: "gpt-4o",
-    azureApiVersion: "2023-12-01-preview",
-    timeoutMs: 15000
+    azureEndpoint: "",
+    azureApiKey: "",
+    azureDeployment: "",
+    azureApiVersion: "",
+    timeoutMs: 0
 };
 
 function tentarExtrairJsonDoTexto(text) {
