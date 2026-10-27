@@ -2,6 +2,7 @@ package service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,16 +16,18 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import dao.AtividadeDAO;
+import dao.DAO;
 import dao.UsuarioDAO;
 import model.Atividade;
 import model.Usuario;
 
 public class NotificacoesService {
 
-    private static final String SMTP_HOST = "";
-    private static final String SMTP_PORT = "";
-    private static final String EMAIL_FROM = "";
-    private static final String EMAIL_PASSWORD = "";
+    private static final String SMTP_HOST = DAO.env("SMTP_HOST", "smtp.gmail.com");
+    private static final String SMTP_PORT = DAO.env("SMTP_PORT", "587");
+    private static final String EMAIL_FROM = DAO.env("EMAIL_FROM", "");
+    private static final String EMAIL_PASSWORD = DAO.env("EMAIL_PASSWORD", "");
+    private static final String APP_URL = DAO.env("APP_URL", "http://localhost:6789");
 
     private static Timer timerRelatorio;
     private static Timer timerRelatorioSemanal;
@@ -33,8 +36,8 @@ public class NotificacoesService {
     private static AtividadeDAO atividadeDAO;
     private static UsuarioDAO usuarioDAO;
 
-    private static final String[] CLASSE_NOMES = { "", "Trabalho", "Estudos", "Atividade Física", "Lazer", "Sono" };
-    private static final int[] METAS_DIARIAS = { 0, 6, 4, 2, 4, 8 };
+    private static final String[] CLASSE_NOMES = Atividade.CLASSES;
+    private static final int[] METAS_DIARIAS = Atividade.METAS_DIARIAS;
     private static final int[] HORARIOS_LEMBRETES = { 6, 12, 20 };
     private static final int DIA_RELATORIO_SEMANAL = 6;
 
@@ -68,12 +71,6 @@ public class NotificacoesService {
                 }
             }
         }, 0, 5 * 60 * 1000);
-    }
-
-    public static void iniciarAgendamentoRelatorioDiario(AtividadeDAO ativDAO, UsuarioDAO usuDAO) {
-        atividadeDAO = ativDAO;
-        usuarioDAO = usuDAO;
-        iniciarAgendamentoRelatorioDiario();
     }
 
     private static void iniciarAgendamentoRelatorioDiario() {
@@ -361,16 +358,9 @@ public class NotificacoesService {
             }
 
             LocalDateTime hoje = LocalDateTime.now();
-            Atividade[] atividadesDia = new Atividade[0];
-
-            for (Atividade a : todasAtividades) {
-                if (a.getDataHora() != null && a.getDataHora().toLocalDate().equals(hoje.toLocalDate())) {
-                    Atividade[] temp = new Atividade[atividadesDia.length + 1];
-                    System.arraycopy(atividadesDia, 0, temp, 0, atividadesDia.length);
-                    temp[atividadesDia.length] = a;
-                    atividadesDia = temp;
-                }
-            }
+            Atividade[] atividadesDia = Arrays.stream(todasAtividades)
+                    .filter(a -> a.getDataHora() != null && a.getDataHora().toLocalDate().equals(hoje.toLocalDate()))
+                    .toArray(Atividade[]::new);
 
             if (atividadesDia.length == 0) {
                 return false;
@@ -415,7 +405,7 @@ public class NotificacoesService {
 
                 detalhesHTML.append(String.format(
                         "<div class=\"atividade-item\"><strong>%s</strong> - <span style=\"color: #6b7280;\">%s</span> | <strong>%.2f h</strong> %s</div>",
-                        a.getNomeAtividade(), classeName, a.getHorasGastas(), emoji));
+                        esc(a.getNomeAtividade()), classeName, a.getHorasGastas(), emoji));
             }
 
             StringBuilder metasNaoAtingidas = new StringBuilder();
@@ -467,18 +457,10 @@ public class NotificacoesService {
             LocalDateTime fimSemana = agora.plusDays(diasAteProximoSabado).toLocalDate().atTime(23, 59, 59);
             LocalDateTime inicioSemana = fimSemana.minusDays(6).toLocalDate().atStartOfDay();
 
-            Atividade[] atividadesSemana = new Atividade[0];
-
-            for (Atividade a : todasAtividades) {
-                if (a.getDataHora() != null &&
-                        !a.getDataHora().isBefore(inicioSemana) &&
-                        !a.getDataHora().isAfter(fimSemana)) {
-                    Atividade[] temp = new Atividade[atividadesSemana.length + 1];
-                    System.arraycopy(atividadesSemana, 0, temp, 0, atividadesSemana.length);
-                    temp[atividadesSemana.length] = a;
-                    atividadesSemana = temp;
-                }
-            }
+            Atividade[] atividadesSemana = Arrays.stream(todasAtividades)
+                    .filter(a -> a.getDataHora() != null && !a.getDataHora().isBefore(inicioSemana)
+                            && !a.getDataHora().isAfter(fimSemana))
+                    .toArray(Atividade[]::new);
 
             if (atividadesSemana.length == 0) {
                 return false;
@@ -564,7 +546,19 @@ public class NotificacoesService {
         }
     }
 
+    // Escapa texto antes de inserir em HTML de e-mail
+    public static String esc(String s) {
+        if (s == null)
+            return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
     public static boolean enviarRelatorio(String emailDestino, String assunto, String corpoHTML) {
+        if (EMAIL_FROM.isBlank() || EMAIL_PASSWORD.isBlank()) {
+            System.err.println("SMTP não configurado (EMAIL_FROM / EMAIL_PASSWORD); e-mail não enviado.");
+            return false;
+        }
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
@@ -584,7 +578,7 @@ public class NotificacoesService {
             message.setFrom(new InternetAddress(EMAIL_FROM, "TimeAwards"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(emailDestino));
             message.setSubject(assunto);
-            message.setContent(corpoHTML, "text/html; charset=utf-8");
+            message.setContent(corpoHTML.replace("{{APP_URL}}", APP_URL), "text/html; charset=utf-8");
 
             Transport.send(message);
             return true;
@@ -771,7 +765,7 @@ public class NotificacoesService {
                                     <span class="emoji-large">✨</span>
 
                                     <div class="cta-section">
-                                        <a href="http://localhost:6789/modulos/atividades/atividades.html" class="cta-button">
+                                        <a href="{{APP_URL}}/modulos/atividades/atividades.html" class="cta-button">
                                             📝 Registrar Atividades Agora
                                         </a>
                                     </div>
@@ -791,7 +785,7 @@ public class NotificacoesService {
                                     <p class="footer-text">🔔 Lembrete Automático - TimeAwards</p>
                                     <p class="footer-small">
                                         Organize sua rotina com inteligência | Enviado às %s<br>
-                                        <a href="http://localhost:6789/modulos/configuracoes/configuracoes.html" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                                        <a href="{{APP_URL}}/modulos/perfil/perfil.html" style="color: #2563eb; text-decoration: none; font-weight: 600;">
                                             Gerenciar notificações
                                         </a>
                                     </p>
@@ -800,7 +794,7 @@ public class NotificacoesService {
                         </body>
                         </html>
                         """,
-                emoji, periodo, nomeUsuario, LocalDateTime.now().toLocalTime().toString().substring(0, 5));
+                emoji, periodo, esc(nomeUsuario), LocalDateTime.now().toLocalTime().toString().substring(0, 5));
     }
 
     public static String gerarRelatorioMonitoramentoDiario(String nomeUsuario, String data,
@@ -899,15 +893,15 @@ public class NotificacoesService {
                                     <p class="footer-text">✅ Relatório Diário Gerado Automaticamente</p>
                                     <p class="footer-small">
                                         TimeAwards - Organize sua rotina com inteligência<br>
-                                        <a href="http://localhost:6789/modulos/monitoramento/monitoramento.html">Ver painel completo</a> |
-                                        <a href="http://localhost:6789/modulos/configuracoes/configuracoes.html">Configurações</a>
+                                        <a href="{{APP_URL}}/modulos/monitoramento/monitoramento.html">Ver painel completo</a> |
+                                        <a href="{{APP_URL}}/modulos/perfil/perfil.html">Configurações</a>
                                     </p>
                                 </div>
                             </div>
                         </body>
                         </html>
                         """,
-                nomeUsuario, data, tempoTotal, metasAtingidas, categoriaDestaque, detalhesAtividades, sugestao);
+                esc(nomeUsuario), data, tempoTotal, metasAtingidas, categoriaDestaque, detalhesAtividades, sugestao);
     }
 
     public static String gerarTemplateRelatorioDiario(String nomeUsuario, String data,
@@ -968,7 +962,7 @@ public class NotificacoesService {
                         </body>
                         </html>
                         """,
-                nomeUsuario, data, tempoTotal, metasAtingidas, categoriaDestaque, sugestao);
+                esc(nomeUsuario), esc(data), tempoTotal, esc(metasAtingidas), esc(categoriaDestaque), esc(sugestao));
     }
 
     public static String gerarTemplateRelatorioSemanal(String nomeUsuario, String periodo,
@@ -1087,37 +1081,15 @@ public class NotificacoesService {
                                     <p class="footer-text">✅ Relatório Semanal Gerado Automaticamente</p>
                                     <p class="footer-small">
                                         TimeAwards - Organize sua rotina com inteligência<br>
-                                        <a href="http://localhost:6789/modulos/monitoramento/monitoramento.html">Ver painel completo</a> |
-                                        <a href="http://localhost:6789/modulos/configuracoes/configuracoes.html">Configurações</a>
+                                        <a href="{{APP_URL}}/modulos/monitoramento/monitoramento.html">Ver painel completo</a> |
+                                        <a href="{{APP_URL}}/modulos/perfil/perfil.html">Configurações</a>
                                     </p>
                                 </div>
                             </div>
                         </body>
                         </html>
                         """,
-                nomeUsuario, periodo, tempoTotal, comparacao, melhorDia, categoriaDestaque,
-                totalAtividades, insight, melhorDia.split(" ")[0]);
-    }
-
-    public static String formatarAtividadesHTML(String[] nomes, double[] horas, String[] categorias,
-            int[] prioridades) {
-        if (nomes == null || nomes.length == 0) {
-            return "<p style=\"color: #9ca3af; font-size: 14px;\">Nenhuma atividade registrada neste dia.</p>";
-        }
-
-        StringBuilder html = new StringBuilder();
-        for (int i = 0; i < nomes.length; i++) {
-            String nome = nomes[i];
-            double hora = horas[i];
-            String categoria = categorias != null && i < categorias.length ? categorias[i] : "Outros";
-            int prioridade = prioridades != null && i < prioridades.length ? prioridades[i] : 0;
-
-            String emojiBarra = prioridade >= 3 ? "🔴" : prioridade == 2 ? "🟡" : "🟢";
-
-            html.append(String.format(
-                    "<div class=\"atividade-item\"><strong>%s</strong> - <span style=\"color: #6b7280;\">%s</span> | <strong>%.2f h</strong> %s</div>%n",
-                    nome, categoria, hora, emojiBarra));
-        }
-        return html.toString();
+                esc(nomeUsuario), esc(periodo), tempoTotal, esc(comparacao), esc(melhorDia), esc(categoriaDestaque),
+                totalAtividades, esc(insight), esc(melhorDia.split(" ")[0]));
     }
 }

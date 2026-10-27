@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:6789';
+const API_BASE_URL = "";
 const LOGIN_PAGE = '/modulos/login/login.html';
 
 const CLASSE_NOMES = {
@@ -422,7 +422,7 @@ function renderizarItemTimeline(atividade) {
       <div class="timeline-bloco timeline-bloco-${corClasse}">
         <div class="timeline-titulo">
           <i class="fas ${icone}"></i>
-          ${atividade.nome || nomeClasse}
+          ${escapeHtml(atividade.nomeAtividade || nomeClasse)}
         </div>
         <div class="timeline-descricao">${nomeClasse}</div>
         <div class="timeline-duracao">

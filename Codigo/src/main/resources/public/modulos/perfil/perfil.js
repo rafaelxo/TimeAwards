@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:6789/usuarios";
+const API_URL = "/usuarios";
 const FOTO_PADRAO = "/assets/imagens/anonimo.png";
 
 let senhaOriginal = "";
@@ -365,8 +365,8 @@ const validarCampo = (campo, valor) => {
             }
             break;
         case "telefone":
-            if (valor && !/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/.test(valor)) {
-                mostrarErro(campo, "Telefone inválido (ex.: (31) 99999-9999)");
+            if (valor && !/^\+?[0-9]{10,15}$/.test(valor.replace(/[\s\-()]/g, ""))) {
+                mostrarErro(campo, "Telefone deve ter de 10 a 15 dígitos (ex.: (31) 99999-9999)");
                 return false;
             }
             break;

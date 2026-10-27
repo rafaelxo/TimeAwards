@@ -61,11 +61,33 @@ function gerarNavBar() {
     }
 }
 
-function logout() {
+function irParaLogin() {
     sessionStorage.clear();
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('timeawards_user');
+    localStorage.removeItem('timeawards_remember');
+    window.location.href = '/modulos/login/login.html';
+}
 
-    window.location.href = 'http://localhost:6789/modulos/login/login.html';
+async function logout() {
+    try {
+        await fetch('/logout', { method: 'POST' });
+    } catch (e) { }
+    irParaLogin();
+}
+
+// Sessão expirada/ausente no servidor (401) -> volta para o login
+const fetchOriginal = window.fetch.bind(window);
+window.fetch = async (...args) => {
+    const resposta = await fetchOriginal(...args);
+    if (resposta.status === 401) irParaLogin();
+    return resposta;
+};
+
+// Use sempre que inserir dados do usuário/servidor via innerHTML
+function escapeHtml(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
 }
 
 function marcaAtivo() {

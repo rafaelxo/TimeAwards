@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:6789";
+const API_BASE_URL = "";
 const LOGIN_PAGE = "/modulos/login/login.html";
 
 const CLASSE_NOMES = {

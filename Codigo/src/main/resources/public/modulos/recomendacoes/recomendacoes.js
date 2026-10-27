@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const API_BASE_URL = "http://localhost:6789";
+    const API_BASE_URL = "";
     const usuarioCorrenteJSON = sessionStorage.getItem("usuarioCorrente");
     if (!usuarioCorrenteJSON) {
         window.location.href = "/modulos/login/login.html";
@@ -33,13 +33,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const atualizarResumoDia = async () => {
         try {
-            const url = "http://localhost:6789/atividades?usuarioId=" + usuario.id;
+            const url = "/atividades?usuarioId=" + usuario.id;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
-                },
-                mode: 'cors'
+                }
             });
             if (!response.ok) throw new Error('Erro ao carregar atividades');
 
@@ -121,14 +120,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         btnGerar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
 
         try {
-            const url = "http://localhost:6789/recomendacoes/gerar?usuarioId=" + usuarioId;
+            const url = "/recomendacoes/gerar?usuarioId=" + usuarioId;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                mode: 'cors',
                 cache: 'no-cache'
             });
 
@@ -147,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         } catch (error) {
             console.error("Erro ao gerar recomendações:", error);
-            alert("❌ Erro ao conectar com o servidor. Verifique se a aplicação está rodando na porta 6789.");
+            alert("❌ Erro ao conectar com o servidor. Verifique se a aplicação está rodando.");
         } finally {
             btnGerar.disabled = false;
             btnGerar.innerHTML = textoOriginal;
@@ -156,14 +154,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const carregarRecomendacoes = async () => {
         try {
-            const url = "http://localhost:6789/recomendacoes?usuarioId=" + usuario.id;
+            const url = "/recomendacoes?usuarioId=" + usuario.id;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                mode: 'cors',
                 cache: 'no-cache'
             });
 
@@ -280,7 +277,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div style="text-align: center; padding: 2rem; color: #d32f2f;">
           <i class="fas fa-exclamation-triangle fa-2x" style="margin-bottom: 1rem;"></i>
           <p>Erro ao carregar recomendações.</p>
-          <p style="font-size: 0.875rem;">${error.message}</p>
+          <p style="font-size: 0.875rem;">${escapeHtml(error.message)}</p>
         </div>
       `;
         }

@@ -22,121 +22,33 @@ const containerNotif = () => {
     return container;
 };
 
-const AZURE_CONFIG = {
-    azureEndpoint: "",
-    azureApiKey: "",
-    azureDeployment: "",
-    azureApiVersion: "",
-    timeoutMs: 0
-};
-
-function tentarExtrairJsonDoTexto(text) {
-    if (!text) return null;
-    const cleaned = text.replace(/```(?:json)?\s*/g, "").replace(/```\s*/g, "");
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (!match) {
-        const altMatch = cleaned.match(/\[[\s\S]*\]/);
-        if (altMatch) {
-            try {
-                return JSON.parse(altMatch[0]);
-            } catch (e) {
-                return null;
-            }
-        }
-        return null;
-    }
-    try {
-        return JSON.parse(match[0]);
-    } catch (e) {
-        return null;
-    }
-}
-
+// A IA roda no servidor (/ia/interpretar): a chave do Azure nunca chega ao navegador.
 async function interpretarComAzure(promptText) {
-    if (!AZURE_CONFIG.azureEndpoint || !AZURE_CONFIG.azureApiKey || !AZURE_CONFIG.azureDeployment) {
-        return null;
-    }
-
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), AZURE_CONFIG.timeoutMs);
-
-    const systemMessage = {
-        role: "system",
-        content:
-            "Você é um assistente que extrai de forma precisa e confiável os dados de uma " +
-            "descrição de atividade em linguagem natural. Deve retornar SOMENTE um objeto JSON " +
-            "com as chaves: nome (string), classe (Trabalho|Estudos|Atividade Física|Lazer|Sono), " +
-            "horas (número, pode ser decimal) e prioridade (Baixa|Média|Alta). " +
-            "Exemplo de saída válida: {\"nome\":\"Reunião com cliente\",\"classe\":\"Trabalho\",\"horas\":2,\"prioridade\":\"Alta\"}. " +
-            "Se algum campo for incerto, gere um valor sensato (horas mínimo 0.1). Não inclua texto explicativo extra. " +
-            "Sempre retorne o resultado como um objeto JSON válido, sem texto adicional antes ou depois."
-    };
-
-    const userMessage = {
-        role: "user",
-        content:
-            "Analise este texto de usuário e extraia nome, classe, horas e prioridade como JSON estrito:\n\n" +
-            promptText
-    };
-
-    const url = `${AZURE_CONFIG.azureEndpoint}/openai/deployments/${AZURE_CONFIG.azureDeployment}/chat/completions?api-version=${AZURE_CONFIG.azureApiVersion}`;
-
-    const body = {
-        messages: [systemMessage, userMessage],
-        max_tokens: 300,
-        temperature: 0,
-        top_p: 1,
-        n: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0
-    };
-
+    const timeout = setTimeout(() => controller.abort(), 20000);
     try {
-        const res = await fetch(url, {
+        const res = await fetch("/ia/interpretar", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "api-key": AZURE_CONFIG.azureApiKey
-            },
-            body: JSON.stringify(body),
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ texto: promptText }),
             signal: controller.signal
         });
+        if (!res.ok) return null;
 
-        clearTimeout(timeout);
+        const { resultado: parsed } = await res.json();
+        if (!parsed) return null;
 
-        if (!res.ok) {
-            console.warn("Azure OpenAI retornou erro:", res.status, res.statusText);
-            return null;
-        }
-
-        const json = await res.json();
-        const content = json?.choices?.[0]?.message?.content;
-        if (!content) {
-            console.warn("Resposta da Azure sem conteúdo válido:", json);
-            return null;
-        }
-
-        const parsed = tentarExtrairJsonDoTexto(content);
-        if (!parsed) {
-            console.warn("Não foi possível parsear JSON da resposta da Azure. Conteúdo recebido:", content);
-            return null;
-        }
-
-        const resultado = {
+        return {
             nome: typeof parsed.nome === "string" ? parsed.nome.trim() : (parsed.name || parsed.titulo || parsed.title || ""),
-            classe: typeof parsed.classe === "string" ? parsed.classe.trim() : (parsed.clazz || ""),
+            classe: typeof parsed.classe === "string" ? parsed.classe.trim() : "",
             horas: typeof parsed.horas === "number" ? parsed.horas : parseFloat(parsed.horas) || undefined,
-            prioridade: typeof parsed.prioridade === "string" ? parsed.prioridade.trim() : (parsed.prio || "")
+            prioridade: typeof parsed.prioridade === "string" ? parsed.prioridade.trim() : ""
         };
-
-        return resultado;
     } catch (err) {
-        if (err.name === "AbortError") {
-            console.warn("Chamada ao Azure abortada por timeout.");
-        } else {
-            console.warn("Erro ao chamar Azure OpenAI:", err);
-        }
+        console.warn("IA indisponível:", err.name === "AbortError" ? "timeout" : err);
         return null;
+    } finally {
+        clearTimeout(timeout);
     }
 }
 

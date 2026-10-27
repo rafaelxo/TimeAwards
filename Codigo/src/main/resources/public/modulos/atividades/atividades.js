@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:6789";
+const API_BASE_URL = "";
 const LOGIN_PAGE = "/modulos/login/login.html";
 
 const METAS_POR_CLASSE = {
@@ -192,12 +192,6 @@ async function salvarAtividade(dados) {
         formData.append("metaHoras", dados.metaHoras);
         formData.append("prioridade", dados.prioridade);
 
-        try {
-            console.debug('POST /atividades body ->', formData.toString());
-        } catch (e) {
-            console.debug('POST /atividades formData build error', e);
-        }
-
         const response = await fetch(`${API_BASE_URL}/atividades`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -205,8 +199,8 @@ async function salvarAtividade(dados) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao salvar atividade: ${errorText}`);
+            const erro = await response.json().catch(() => ({}));
+            throw new Error(erro.message || `HTTP ${response.status}`);
         }
 
         exibirMensagem("✅ Atividade adicionada com sucesso!", "success");
@@ -236,12 +230,6 @@ async function atualizarAtividade(id, dados) {
         formData.append("metaHoras", dados.metaHoras);
         formData.append("prioridade", dados.prioridade);
 
-        try {
-            console.debug(`PUT /atividades/${id} body ->`, formData.toString());
-        } catch (e) {
-            console.debug('PUT /atividades formData build error', e);
-        }
-
         const response = await fetch(`${API_BASE_URL}/atividades/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -249,8 +237,8 @@ async function atualizarAtividade(id, dados) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao atualizar atividade: ${errorText}`);
+            const erro = await response.json().catch(() => ({}));
+            throw new Error(erro.message || `HTTP ${response.status}`);
         }
 
         exibirMensagem("✅ Atividade atualizada com sucesso!", "success");
@@ -285,8 +273,8 @@ async function deletarAtividade(id) {
         );
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao deletar atividade: ${errorText}`);
+            const erro = await response.json().catch(() => ({}));
+            throw new Error(erro.message || `HTTP ${response.status}`);
         }
 
         exibirMensagem("✅ Atividade excluída com sucesso!", "success");
@@ -516,7 +504,7 @@ function criarLinhaAtividade(atividade, tbody) {
     const corPrioridade = CORES_PRIORIDADE[prioridadeNome] || "#6b7280";
 
     tr.innerHTML = `
-        <td>${atividade.nomeAtividade || "-"}</td>
+        <td>${escapeHtml(atividade.nomeAtividade || "-")}</td>
         <td><span class="badge-classe">${classeNome}</span></td>
         <td><strong>${atividade.horasGastas || 0}h</strong></td>
         <td>

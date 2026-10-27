@@ -29,7 +29,7 @@ Desenvolvido como **Trabalho Interdisciplinar II (TI2)** do curso de **Ciência 
 - 📊 **Visualizações interativas** com Chart.js e análises semanais
 - 📧 **Automação inteligente** de relatórios por e-mail
 - 🎯 **Gamificação** com metas diárias personalizadas por categoria
-- 🔐 **Segurança robusta** com hash MD5 nativo PostgreSQL
+- 🔐 **Segurança** com senhas em PBKDF2 (senhas MD5 antigas são migradas no login) e cookie de sessão assinado
 
 ### 🎯 Missão
 
@@ -115,7 +115,7 @@ Promover **equilíbrio digital** através de ferramentas que tornam visível o *
 
 ## 🛠 Tecnologias
 
-- **Backend**: Java 25, Spark Framework, PostgreSQL (Azure), Maven
+- **Backend**: Java 21+, Spark Framework, PostgreSQL (Azure), Maven
 - **Frontend**: HTML5, CSS3, JavaScript ES6+, jQuery, Chart.js, Bootstrap
 - **Inteligência Artificial**: Azure OpenAI GPT-4o, Tesseract.js OCR, Web Speech API
 - **Cloud**: Azure PostgreSQL, Azure OpenAI Service, Gmail SMTP
@@ -127,11 +127,10 @@ Promover **equilíbrio digital** através de ferramentas que tornam visível o *
 ## 📁 Estrutura do Repositório
 
 ```
-plmg-cc-ti2-2025-2-g21-timeawards/
-├── 📂 Artefatos/        # Documentação, diagramas, reuniões
-├── 📂 Codigo/           # Código-fonte (Java backend + HTML frontend)
-├── 📂 Divulgacao/       # Materiais promocionais
-└── 📂 Documentacao/     # Manuais e especificações
+TimeAwards/
+├── 📂 Codigo/           # Código-fonte (Java backend + HTML frontend + database.sql)
+├── 📄 README.md         # Este arquivo
+└── 📄 SECURITY.md       # Política de segurança
 ```
 
 > 🔍 Para estrutura detalhada do código-fonte (arquitetura MVC, DAOs, Services, APIs), consulte [Codigo/README.md](Codigo/README.md)
@@ -144,9 +143,9 @@ plmg-cc-ti2-2025-2-g21-timeawards/
 
 ```bash
 # Instale as seguintes ferramentas:
-- Java JDK 25
-- Maven 4.0
-- PostgreSQL 17
+- Java JDK 21+
+- Maven 3.9+
+- PostgreSQL 12+
 - Git
 ```
 
@@ -155,34 +154,42 @@ plmg-cc-ti2-2025-2-g21-timeawards/
 #### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/ICEI-PUC-Minas-CC-TI/plmg-cc-ti2-2025-2-g21-timeawards.git
-cd plmg-cc-ti2-2025-2-g21-timeawards/Codigo
+git clone https://github.com/rafaelxo/TimeAwards.git
+cd TimeAwards/Codigo
 ```
 
 #### 2. Configure o Banco de Dados
 
-Crie um banco PostgreSQL:
+Crie o banco e as tabelas:
 
-```sql
-CREATE DATABASE timeawards;
+```bash
+createdb timeawards
+psql -d timeawards -f database.sql
 ```
 
-Configure as credenciais no arquivo `DAO.java`:
+Configure as credenciais por **variáveis de ambiente** (nada de senha no código):
 
-```java
-private static final String URL = "jdbc:postgresql://localhost:5432/timeawards";
-private static final String USER = "seu_usuario";
-private static final String PASSWORD = "sua_senha";
+```bash
+export DB_URL="jdbc:postgresql://localhost:5432/timeawards"
+export DB_USER="seu_usuario"
+export DB_PASSWORD="sua_senha"
 ```
 
-> 📘 Scripts SQL completos (criação de tabelas, índices, triggers) estão na [Documentação Técnica](Codigo/README.md#️-database-layer-dao)
+> 📘 Schema completo (tabelas, índices, trigger) em [`Codigo/database.sql`](Codigo/database.sql)
 
 #### 3. Configure as APIs (Opcional mas Recomendado)
 
-- **Azure OpenAI**: Edite `ia-prompt.js` e `RecomendadorService.java` com suas credenciais
-- **E-mail SMTP**: Configure `NotificacoesService.java` com suas credenciais Gmail
+| Variável | Uso | Padrão |
+|---|---|---|
+| `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, `AZURE_OPENAI_DEPLOYMENT` | IA de atividades e recomendações | — (usa fallback local) |
+| `AZURE_OPENAI_API_VERSION` | Versão da API Azure | `2024-08-01-preview` |
+| `EMAIL_FROM`, `EMAIL_PASSWORD` | Envio de e-mails (senha de app do Gmail) | — (e-mails desativados) |
+| `SMTP_HOST`, `SMTP_PORT` | Servidor SMTP | `smtp.gmail.com`, `587` |
+| `AUTH_SECRET` | Assina o cookie de login (sem ele, todos deslogam ao reiniciar) | aleatório |
+| `APP_URL` | Links nos e-mails | `http://localhost:6789` |
+| `PORT` | Porta HTTP | `6789` |
 
-> 🔐 O código já inclui credenciais de teste. Para produção, use variáveis de ambiente
+> 🔐 A chave do Azure fica **só no servidor**: o frontend chama `POST /ia/interpretar`.
 
 #### 4. Compile e Execute
 
@@ -260,16 +267,10 @@ http://localhost:6789
 
 ### 1. Azure OpenAI (GPT-4o)
 
-**Uso no Frontend (`ia-prompt.js`):**
+**Interpretação de atividades (`ia-prompt.js` → `POST /ia/interpretar`):**
 
-```javascript
-// Endpoint de interpretação de atividades
-const AZURE_CONFIG = {
-    azureEndpoint: "https://rectimeawards.openai.azure.com/",
-    azureApiKey: "...",
-    azureDeployment: "gpt-4o"
-};
-```
+O frontend envia o texto ao backend, que consulta o Azure OpenAI com a chave
+configurada em `AZURE_OPENAI_KEY`. Sem IA configurada, `ia-prompt.js` usa a análise local.
 
 **Uso no Backend (`RecomendadorService.java`):**
 
@@ -304,11 +305,11 @@ recognition.continuous = true;
 |-----------|----|--------------|----|
 | **Trabalho** | 1 | 6h | 🔵 Azul |
 | **Estudos** | 2 | 4h | 🟢 Verde |
-| **Atividade Física** | 3 | 2h | 🔴 Amarelo |
-| **Lazer** | 4 | 4h | 🟡 Vermelho |
-| **Sono** | 5 | 8h | 🟣 Ciano |
+| **Atividade Física** | 3 | 2h | 🟡 Amarelo |
+| **Lazer** | 4 | 4h | 🔴 Vermelho |
+| **Sono** | 5 | 8h | 🩵 Ciano |
 
-**Prioridades:** Alta (1), Média (2), Baixa (3)
+**Prioridades:** Baixa (1), Média (2), Alta (3)
 
 ---
 
@@ -318,14 +319,11 @@ recognition.continuous = true;
 # Compilar projeto
 mvn clean compile
 
-# Rodar testes
+# Rodar testes (senha e token)
 mvn test
 
-# Empacotar JAR
-mvn package
-
 # Executar aplicação
-mvn exec:java
+mvn compile exec:java
 
 # Limpar build
 mvn clean
@@ -335,11 +333,9 @@ mvn clean
 
 ## 📚 Documentação Adicional
 
-- [📖 Documentação Completa](Documentacao/)
-- [🎨 Diagramas UML e ER](Artefatos/Diagramas/)
-- [📊 Apresentações das Sprints](Artefatos/Slides/)
-- [📝 Atas de Reuniões](Artefatos/Reunioes/)
-- [💻 README Técnico do Código](Codigo/README.md)
+- [💻 README Técnico do Código](Codigo/README.md): arquitetura, API e configuração
+- [🗄️ Schema SQL](Codigo/database.sql)
+- [🔐 Política de Segurança](SECURITY.md)
 
 ---
 
@@ -366,7 +362,7 @@ mvn clean
 **IA não está funcionando:**
 
 - Verifique conexão com internet
-- Confirme credenciais Azure OpenAI
+- Confirme as variáveis `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY` e `AZURE_OPENAI_DEPLOYMENT`
 - O sistema usa fallback local automático
 
 **OCR não detecta texto:**
@@ -384,7 +380,7 @@ mvn clean
 **Erro de conexão com banco:**
 
 - Verifique se o PostgreSQL está rodando
-- Confirme credenciais no `DAO.java`
+- Confirme as variáveis `DB_URL`, `DB_USER` e `DB_PASSWORD`
 - Certifique-se que o banco `timeawards` existe
 
 ---
@@ -393,7 +389,7 @@ mvn clean
 
 ### 📈 Estatísticas
 
-- **Linhas de Código**: ~8.500
+- **Linhas de Código**: ~14.000
 - **Commits**: 200+
 - **Sprints**: 4 (3 semanas cada)
 - **Horas de Desenvolvimento**: ~400h (equipe)

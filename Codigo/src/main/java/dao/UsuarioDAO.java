@@ -1,263 +1,248 @@
 package dao;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HexFormat;
+import java.util.List;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 import model.Usuario;
 
 public class UsuarioDAO extends DAO {
 
-    public UsuarioDAO() {
-        super();
+    private static final int ITERACOES = 210_000;
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    // ==================== HASH DE SENHA (PBKDF2) ====================
+
+    public static String hashSenha(String senha) {
+        byte[] salt = new byte[16];
+        RANDOM.nextBytes(salt);
+        return "pbkdf2$" + ITERACOES + "$" + b64(salt) + "$" + b64(pbkdf2(senha, salt, ITERACOES));
     }
 
-    // Cadastrar usuário (registrar) - USANDO MD5 DO POSTGRESQL
+    // Aceita o formato novo (pbkdf2$...) e o legado (MD5 hex do PostgreSQL)
+    public static boolean conferirSenha(String senha, String armazenado) {
+        if (senha == null || armazenado == null)
+            return false;
+        byte[] esperado, calculado;
+        if (armazenado.startsWith("pbkdf2$")) {
+            String[] p = armazenado.split("\\$");
+            if (p.length != 4)
+                return false;
+            esperado = Base64.getDecoder().decode(p[3]);
+            calculado = pbkdf2(senha, Base64.getDecoder().decode(p[2]), Integer.parseInt(p[1]));
+        } else {
+            esperado = armazenado.toLowerCase().getBytes(StandardCharsets.US_ASCII);
+            calculado = md5Hex(senha).getBytes(StandardCharsets.US_ASCII);
+        }
+        return MessageDigest.isEqual(esperado, calculado);
+    }
+
+    private static byte[] pbkdf2(String senha, byte[] salt, int iteracoes) {
+        try {
+            PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), salt, iteracoes, 256);
+            return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String md5Hex(String s) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("MD5").digest(s.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String b64(byte[] b) {
+        return Base64.getEncoder().encodeToString(b);
+    }
+
+    // ==================== CRUD ====================
+
+    private static Usuario ler(ResultSet rs) throws SQLException {
+        return new Usuario(
+                rs.getInt("id"),
+                rs.getString("nome"),
+                rs.getString("login"),
+                rs.getString("senha"),
+                rs.getString("email"),
+                rs.getString("telefone"),
+                rs.getBoolean("notificacoes"));
+    }
+
+    // Garante que a coluna senha comporta o hash PBKDF2 (antes era MD5 de 32 caracteres)
+    public void migrarColunaSenha() {
+        verificarConexao();
+        try (Statement st = conexao.createStatement()) {
+            st.execute("ALTER TABLE usuario ALTER COLUMN senha TYPE TEXT");
+        } catch (SQLException e) {
+            System.err.println("Aviso: não foi possível ajustar a coluna senha: " + e.getMessage());
+        }
+    }
+
+    // Cadastrar usuário (registrar)
     public boolean inserirUsuario(Usuario u) {
         verificarConexao();
-        boolean status = false;
-        try {
-            // Usa MD5 nativo do PostgreSQL para garantir consistência
-            String sql = "INSERT INTO usuario (nome, login, senha, email, telefone, notificacoes) VALUES (?, ?, MD5(?::text), ?, ?, ?)";
-            PreparedStatement st = conexao.prepareStatement(sql);
+        String sql = "INSERT INTO usuario (nome, login, senha, email, telefone, notificacoes) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement st = conexao.prepareStatement(sql)) {
             st.setString(1, u.getNome());
             st.setString(2, u.getLogin());
-            st.setString(3, u.getSenha());
+            st.setString(3, hashSenha(u.getSenha()));
             st.setString(4, u.getEmail());
             st.setString(5, u.getTelefone());
             st.setBoolean(6, u.isNotificacoes());
-            st.executeUpdate();
-            st.close();
-            status = true;
-            System.out.println("✅ Usuário inserido com sucesso!");
+            return st.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println(" Erro ao inserir usuário: " + e.getMessage());
+            System.err.println("Erro ao inserir usuário: " + e.getMessage());
+            return false;
         }
-        return status;
     }
 
-    // Verificar se login já existe
+    // Verifica se já existe outro usuário (id != idExcluir) com o mesmo valor na coluna
+    private boolean existe(String coluna, String valor, int idExcluir) {
+        verificarConexao();
+        // coluna vem só das constantes abaixo, nunca do usuário
+        String sql = "SELECT 1 FROM usuario WHERE " + coluna + " = ? AND id != ?";
+        try (PreparedStatement st = conexao.prepareStatement(sql)) {
+            st.setString(1, valor);
+            st.setInt(2, idExcluir);
+            try (ResultSet rs = st.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar " + coluna + ": " + e.getMessage());
+            return true;
+        }
+    }
+
     public boolean loginExiste(String login, int idExcluir) {
-        verificarConexao();
-        try {
-            String sql = "SELECT COUNT(*) FROM usuario WHERE login = ? AND id != ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
-            st.setString(1, login);
-            st.setInt(2, idExcluir);
-            ResultSet rs = st.executeQuery();
-            rs.next();
-            boolean existe = rs.getInt(1) > 0;
-            rs.close();
-            st.close();
-            return existe;
-        } catch (SQLException e) {
-            System.err.println("Erro ao verificar login: " + e.getMessage());
-            return true;
-        }
+        return existe("login", login, idExcluir);
     }
 
-    // Verificar se email já existe
     public boolean emailExiste(String email, int idExcluir) {
-        verificarConexao();
-        try {
-            String sql = "SELECT COUNT(*) FROM usuario WHERE email = ? AND id != ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
-            st.setString(1, email);
-            st.setInt(2, idExcluir);
-            ResultSet rs = st.executeQuery();
-            rs.next();
-            boolean existe = rs.getInt(1) > 0;
-            rs.close();
-            st.close();
-            return existe;
-        } catch (SQLException e) {
-            System.err.println("Erro ao verificar email: " + e.getMessage());
-            return true;
-        }
+        return existe("email", email, idExcluir);
     }
 
-    // Verificar se telefone já existe
     public boolean telefoneExiste(String telefone, int idExcluir) {
-        verificarConexao();
-        try {
-            String sql = "SELECT COUNT(*) FROM usuario WHERE telefone = ? AND id != ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
-            st.setString(1, telefone);
-            st.setInt(2, idExcluir);
-            ResultSet rs = st.executeQuery();
-            rs.next();
-            boolean existe = rs.getInt(1) > 0;
-            rs.close();
-            st.close();
-            return existe;
-        } catch (SQLException e) {
-            System.err.println("Erro ao verificar telefone: " + e.getMessage());
-            return true;
-        }
+        return existe("telefone", telefone, idExcluir);
     }
 
-    // Autenticar usuário (login) - USANDO MD5 DO POSTGRESQL
-    public Usuario autenticarUsuario(String login, String senhaPlainText) {
+    // Autenticar usuário (login). Senhas MD5 antigas são migradas para PBKDF2 no primeiro login.
+    public Usuario autenticarUsuario(String login, String senha) {
         verificarConexao();
         Usuario u = null;
-        try {
-            // Busca usuário usando MD5 nativo do PostgreSQL para comparar
-            String sql = "SELECT * FROM usuario WHERE login = ? AND senha = MD5(?::text)";
-            PreparedStatement st = conexao.prepareStatement(sql);
+        try (PreparedStatement st = conexao.prepareStatement("SELECT * FROM usuario WHERE login = ?")) {
             st.setString(1, login);
-            st.setString(2, senhaPlainText);
-            ResultSet rs = st.executeQuery();
-            if (rs.next()) {
-                u = new Usuario();
-                u.setId(rs.getInt("id"));
-                u.setNome(rs.getString("nome"));
-                u.setLogin(rs.getString("login"));
-                u.setSenha(rs.getString("senha"));
-                u.setEmail(rs.getString("email"));
-                u.setTelefone(rs.getString("telefone"));
-                u.setNotificacoes(rs.getBoolean("notificacoes"));
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next())
+                    u = ler(rs);
             }
-            rs.close();
-            st.close();
         } catch (SQLException e) {
             System.err.println("Erro ao autenticar usuário: " + e.getMessage());
+            return null;
         }
+        if (u == null || !conferirSenha(senha, u.getSenha()))
+            return null;
+        if (!u.getSenha().startsWith("pbkdf2$"))
+            atualizarSenha(u.getId(), senha);
         return u;
     }
 
-    // Listar todos os usuários
+    private void atualizarSenha(int id, String senha) {
+        try (PreparedStatement st = conexao.prepareStatement("UPDATE usuario SET senha = ? WHERE id = ?")) {
+            st.setString(1, hashSenha(senha));
+            st.setInt(2, id);
+            st.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erro ao migrar senha: " + e.getMessage());
+        }
+    }
+
+    // Listar todos os usuários (uso interno: agendamentos de e-mail)
     public Usuario[] listarUsuarios() {
         verificarConexao();
-        Usuario[] usuarios = new Usuario[10000];
-        int count = 0;
-        try {
-            String sql = "SELECT * FROM usuario ORDER BY nome";
-            PreparedStatement st = conexao.prepareStatement(sql);
-            ResultSet rs = st.executeQuery();
-            while (rs.next()) {
-                usuarios[count] = new Usuario();
-                usuarios[count].setId(rs.getInt("id"));
-                usuarios[count].setNome(rs.getString("nome"));
-                usuarios[count].setLogin(rs.getString("login"));
-                usuarios[count].setSenha(rs.getString("senha"));
-                usuarios[count].setEmail(rs.getString("email"));
-                usuarios[count].setTelefone(rs.getString("telefone"));
-                usuarios[count].setNotificacoes(rs.getBoolean("notificacoes"));
-                count++;
-            }
-            rs.close();
-            st.close();
+        List<Usuario> lista = new ArrayList<>();
+        try (PreparedStatement st = conexao.prepareStatement("SELECT * FROM usuario ORDER BY nome");
+                ResultSet rs = st.executeQuery()) {
+            while (rs.next())
+                lista.add(ler(rs));
         } catch (SQLException e) {
             System.err.println("Erro ao listar usuários: " + e.getMessage());
         }
-        Usuario[] resultado = new Usuario[count];
-        System.arraycopy(usuarios, 0, resultado, 0, count);
-        return resultado;
+        return lista.toArray(new Usuario[0]);
     }
 
     // Buscar usuário por ID
     public Usuario buscarUsuarioPorId(int id) {
         verificarConexao();
-        Usuario u = null;
-        try {
-            String sql = "SELECT * FROM usuario WHERE id = ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+        try (PreparedStatement st = conexao.prepareStatement("SELECT * FROM usuario WHERE id = ?")) {
             st.setInt(1, id);
-            ResultSet rs = st.executeQuery();
-            if (rs.next()) {
-                u = new Usuario();
-                u.setId(rs.getInt("id"));
-                u.setNome(rs.getString("nome"));
-                u.setLogin(rs.getString("login"));
-                u.setSenha(rs.getString("senha"));
-                u.setEmail(rs.getString("email"));
-                u.setTelefone(rs.getString("telefone"));
-                u.setNotificacoes(rs.getBoolean("notificacoes"));
+            try (ResultSet rs = st.executeQuery()) {
+                return rs.next() ? ler(rs) : null;
             }
-            rs.close();
-            st.close();
         } catch (SQLException e) {
             System.err.println("Erro ao buscar usuário: " + e.getMessage());
+            return null;
         }
-        return u;
     }
 
-    // Atualizar usuário - USANDO MD5 DO POSTGRESQL
+    // Atualizar usuário. Senha vazia/nula mantém a senha atual.
     public boolean atualizarUsuario(Usuario u) {
         verificarConexao();
-        boolean status = false;
-        try {
-            // Se senha estiver vazia/nula, NÃO atualiza a senha
-            String sql;
-            PreparedStatement st;
-
-            if (u.getSenha() == null || u.getSenha().trim().isEmpty()) {
-                // Atualiza SEM alterar a senha
-                sql = "UPDATE usuario SET nome = ?, login = ?, email = ?, telefone = ?, notificacoes = ? WHERE id = ?";
-                st = conexao.prepareStatement(sql);
-                st.setString(1, u.getNome());
-                st.setString(2, u.getLogin());
-                st.setString(3, u.getEmail());
-                st.setString(4, u.getTelefone());
-                st.setBoolean(5, u.isNotificacoes());
-                st.setInt(6, u.getId());
-            } else {
-                // Atualiza incluindo nova senha
-                sql = "UPDATE usuario SET nome = ?, login = ?, senha = MD5(?::text), email = ?, telefone = ?, notificacoes = ? WHERE id = ?";
-                st = conexao.prepareStatement(sql);
-                st.setString(1, u.getNome());
-                st.setString(2, u.getLogin());
-                st.setString(3, u.getSenha());
-                st.setString(4, u.getEmail());
-                st.setString(5, u.getTelefone());
-                st.setBoolean(6, u.isNotificacoes());
-                st.setInt(7, u.getId());
-                System.out.println("🔐 Nova senha definida!");
-            }
-
-            st.executeUpdate();
-            st.close();
-            status = true;
-            System.out.println("✅ Usuário atualizado com sucesso!");
+        boolean trocaSenha = u.getSenha() != null && !u.getSenha().isBlank();
+        String sql = "UPDATE usuario SET nome = ?, login = ?, email = ?, telefone = ?, notificacoes = ?"
+                + (trocaSenha ? ", senha = ?" : "") + " WHERE id = ?";
+        try (PreparedStatement st = conexao.prepareStatement(sql)) {
+            int i = 1;
+            st.setString(i++, u.getNome());
+            st.setString(i++, u.getLogin());
+            st.setString(i++, u.getEmail());
+            st.setString(i++, u.getTelefone());
+            st.setBoolean(i++, u.isNotificacoes());
+            if (trocaSenha)
+                st.setString(i++, hashSenha(u.getSenha()));
+            st.setInt(i, u.getId());
+            return st.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar usuário: " + e.getMessage());
+            return false;
         }
-        return status;
     }
 
-    // Atualizar apenas notificações (SEM tocar na senha!)
+    // Atualizar apenas notificações
     public boolean atualizarNotificacoes(int id, boolean notificacoes) {
         verificarConexao();
-        boolean status = false;
-        try {
-            String sql = "UPDATE usuario SET notificacoes = ? WHERE id = ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+        try (PreparedStatement st = conexao.prepareStatement("UPDATE usuario SET notificacoes = ? WHERE id = ?")) {
             st.setBoolean(1, notificacoes);
             st.setInt(2, id);
-            st.executeUpdate();
-            st.close();
-            status = true;
-            System.out.println("✅ Notificações atualizadas sem alterar senha!");
+            return st.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar notificações: " + e.getMessage());
+            return false;
         }
-        return status;
     }
 
     // Excluir usuário
     public boolean excluirUsuario(int id) {
         verificarConexao();
-        boolean status = false;
-        try {
-            String sql = "DELETE FROM usuario WHERE id = ?";
-            PreparedStatement st = conexao.prepareStatement(sql);
+        try (PreparedStatement st = conexao.prepareStatement("DELETE FROM usuario WHERE id = ?")) {
             st.setInt(1, id);
-            st.executeUpdate();
-            st.close();
-            status = true;
+            return st.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Erro ao excluir usuário: " + e.getMessage());
+            return false;
         }
-        return status;
     }
 }

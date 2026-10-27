@@ -1,7 +1,7 @@
 const LOGIN_URL = "/modulos/login/login.html";
 let RETURN_URL = "/dashboard.html";
-const API_URL = "http://localhost:6789/usuarios";
-const LOGIN_API_URL = "http://localhost:6789/login";
+const API_URL = "/usuarios";
+const LOGIN_API_URL = "/login";
 
 var usuarioCorrente = {};
 
@@ -282,18 +282,18 @@ async function loginUser(login, senha, remember = false) {
             field: loginValidation.field,
         };
 
-    const passwordValidation = validatePassword(senha);
-    if (!passwordValidation.valid)
+    if (!senha)
         return {
             success: false,
-            message: passwordValidation.message,
-            field: passwordValidation.field,
+            message: "O campo de senha não pode estar vazio.",
+            field: "senha",
         };
 
     try {
         const params = new URLSearchParams();
         params.append("login", login);
         params.append("senha", senha);
+        params.append("lembrar", remember ? "true" : "false");
 
         const response = await fetch(LOGIN_API_URL, {
             method: "POST",
@@ -338,6 +338,7 @@ async function loginUser(login, senha, remember = false) {
 }
 
 function logoutUser() {
+    fetch("/logout", { method: "POST" }).catch(() => { });
     sessionStorage.removeItem("usuarioCorrente");
     clearRememberedSession();
     window.location = LOGIN_URL;
@@ -444,8 +445,11 @@ async function addUser(nome, login, email, telefone, senha, senha2) {
 function showUserInfo(element) {
     const elemUser = document.getElementById(element);
     if (elemUser && usuarioCorrente.nome && usuarioCorrente.login) {
-        elemUser.innerHTML = `${usuarioCorrente.nome} (${usuarioCorrente.login})
-            <a onclick="logoutUser()">❌</a>`;
+        elemUser.textContent = `${usuarioCorrente.nome} (${usuarioCorrente.login}) `;
+        const sair = document.createElement("a");
+        sair.textContent = "❌";
+        sair.onclick = logoutUser;
+        elemUser.appendChild(sair);
     }
 }
 

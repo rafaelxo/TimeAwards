@@ -1,21 +1,30 @@
-# Security Policy
+# Política de Segurança
 
-## Supported Versions
+## Versões suportadas
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Apenas a versão mais recente da branch `main` recebe correções de segurança.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Como reportar uma vulnerabilidade
 
-## Reporting a Vulnerability
+**Não abra uma issue pública.** Use o reporte privado do GitHub:
+aba **Security → Report a vulnerability** deste repositório.
 
-Use this section to tell people how to report a vulnerability.
+Inclua, se possível:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+- descrição do problema e impacto;
+- passos para reproduzir (rota, payload, página);
+- versão/commit afetado.
+
+Você deve receber uma resposta em até 7 dias. Se a vulnerabilidade for confirmada,
+a correção é publicada na `main` e o reporte é creditado (se desejar).
+
+## Práticas adotadas no projeto
+
+- Senhas com hash **PBKDF2-SHA256** (salt aleatório); hashes MD5 legados são migrados no login.
+- Sessão por cookie **HttpOnly** assinado com HMAC (`AUTH_SECRET`); toda rota de dados usa o usuário do cookie, nunca um id enviado pelo cliente.
+- Requisições de outras origens são recusadas nas rotas protegidas (CSRF).
+- Todas as queries usam `PreparedStatement`.
+- Dados do usuário são escapados antes de entrar em HTML (páginas e e-mails).
+- Credenciais (banco, Azure OpenAI, SMTP) só por variáveis de ambiente; a chave da IA nunca vai ao navegador.
+
+Nunca faça commit de arquivos `.env` ou de credenciais. Se uma chave vazar, **revogue-a imediatamente** no provedor.

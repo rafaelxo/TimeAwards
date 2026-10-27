@@ -4,6 +4,19 @@ import java.time.LocalDateTime;
 
 public class Atividade {
 
+    // Mesma numeração usada no frontend (atividades.js)
+    public static final String[] CLASSES = { "", "Trabalho", "Estudos", "Atividade Física", "Lazer", "Sono" };
+    public static final int[] METAS_DIARIAS = { 0, 6, 4, 2, 4, 8 };
+    public static final String[] PRIORIDADES = { "", "Baixa", "Média", "Alta" };
+
+    public static String nomeClasse(int classe) {
+        return classe > 0 && classe < CLASSES.length ? CLASSES[classe] : "Outros";
+    }
+
+    public static String nomePrioridade(int prioridade) {
+        return prioridade > 0 && prioridade < PRIORIDADES.length ? PRIORIDADES[prioridade] : "Indefinida";
+    }
+
     // atributos
     private int id;
     private int usuarioId;

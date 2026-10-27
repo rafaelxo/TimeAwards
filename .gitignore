@@ -1,0 +1,16 @@
+# Ferramentas / IDEs
+.serena/
+.idea/
+*.iml
+.vscode/
+
+# Build
+target/
+
+# Segredos
+.env
+*.env
+
+# Sistema
+.DS_Store
+Thumbs.db

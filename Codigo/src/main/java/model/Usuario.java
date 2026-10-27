@@ -6,7 +6,7 @@ public class Usuario {
     private int id;
     private String nome;
     private String login;
-    private String senha;
+    private transient String senha; // hash; transient = nunca vai para o JSON
     private String email;
     private String telefone;
     private boolean notificacoes;
